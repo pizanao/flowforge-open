@@ -125,6 +125,10 @@ REST_FRAMEWORK = {
 # Service token compartilhado com Portfolio HQ
 PORTFOLIO_HQ_SERVICE_TOKEN = os.getenv("PORTFOLIO_HQ_SERVICE_TOKEN", "")
 
+# Assinatura HMAC para webhooks externos
+WEBHOOK_SIGNING_SECRET = os.getenv("WEBHOOK_SIGNING_SECRET", "")
+WEBHOOK_SIGNATURE_TOLERANCE_SECONDS = int(os.getenv("WEBHOOK_SIGNATURE_TOLERANCE_SECONDS", "300"))
+
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", os.getenv("FRONTEND_URL", "http://localhost:5106")).split(",")

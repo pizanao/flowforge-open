@@ -1,5 +1,10 @@
 """ViewSets do FlowForge."""
 
+import hashlib
+import hmac
+import time
+
+from django.conf import settings
 from django.db.models import Avg, Count, Subquery, OuterRef
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -16,6 +21,41 @@ from flowforge.api.serializers import (
     WorkflowListSerializer,
     WorkflowTemplateSerializer,
 )
+
+
+def _webhook_signature_is_valid(request, raw_body: bytes) -> bool:
+    """
+    Valida assinatura HMAC SHA-256 de webhook externo.
+
+    Args:
+        request: Requisição DRF recebida.
+        raw_body: Corpo original da requisição em bytes.
+
+    Returns:
+        True quando timestamp e assinatura batem com o segredo configurado.
+    """
+    secret = settings.WEBHOOK_SIGNING_SECRET
+    if not secret:
+        return False
+
+    timestamp = request.headers.get("X-FlowForge-Timestamp", "")
+    received_signature = request.headers.get("X-FlowForge-Signature", "")
+    if not timestamp or not received_signature.startswith("sha256="):
+        return False
+
+    try:
+        request_timestamp = int(timestamp)
+    except ValueError:
+        return False
+
+    tolerance = settings.WEBHOOK_SIGNATURE_TOLERANCE_SECONDS
+    if abs(int(time.time()) - request_timestamp) > tolerance:
+        return False
+
+    signed_payload = timestamp.encode() + b"." + raw_body
+    digest = hmac.new(secret.encode(), signed_payload, hashlib.sha256).hexdigest()
+    expected_signature = f"sha256={digest}"
+    return hmac.compare_digest(expected_signature, received_signature)
 
 
 class WorkflowViewSet(viewsets.ModelViewSet):
@@ -107,6 +147,13 @@ class WorkflowViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="webhook", permission_classes=[AllowAny])
     def webhook(self, request, pk=None):
         """Recebe chamada externa e dispara o workflow com o body como input."""
+        raw_body = request.body
+        if not _webhook_signature_is_valid(request, raw_body):
+            return Response(
+                {"error": "Assinatura do webhook inválida."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         workflow = self.get_object()
         from flowforge.tasks import execute_workflow
         run = Run.objects.create(

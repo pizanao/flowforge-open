@@ -243,9 +243,14 @@ docker compose exec backend python manage.py seed_daily_briefing   # Daily Brief
 ### Trigger a workflow externally (no browser needed)
 
 ```bash
+BODY='{"message": "Hello!", "from": "5511999999999"}'
+TS=$(date +%s)
+SIG=$(printf "%s.%s" "$TS" "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SIGNING_SECRET" -hex | sed 's/^.* //')
 curl -X POST http://localhost:8006/api/workflows/{id}/webhook/ \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!", "from": "5511999999999"}'
+  -H "X-FlowForge-Timestamp: $TS" \
+  -H "X-FlowForge-Signature: sha256=$SIG" \
+  -d "$BODY"
 # → {"run_id": "...", "status": "execução iniciada"}
 ```
 
@@ -263,7 +268,7 @@ POST   /api/workflows/from-template/{slug}/    Instantiate template as workflow
 PUT    /api/workflows/{id}/save_graph/          Atomic save (nodes + edges)
 POST   /api/workflows/{id}/execute/             Execute via Celery
 POST   /api/workflows/{id}/validate/            {valid, errors: [{node_id, message}]}
-POST   /api/workflows/{id}/webhook/             External HTTP trigger
+POST   /api/workflows/{id}/webhook/             External HTTP trigger with HMAC signature
 POST   /api/workflows/{id}/duplicate/           Clone with all nodes + edges
 
 # Nodes
@@ -276,7 +281,7 @@ GET    /api/runs/{id}/                          Full detail with per-node execut
 POST   /api/runs/{id}/cancel/                   Cancel in-flight run
 
 # WebSocket
-WS     /ws/workflow/{id}/run/{run_id}/          Live execution stream (replays snapshot on connect)
+WS     /ws/runs/{run_id}/                       Live execution stream (JWT via subprotocol)
 ```
 
 ---

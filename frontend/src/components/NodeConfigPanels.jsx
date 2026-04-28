@@ -59,7 +59,7 @@ function TriggerPanel({ config, onChange, workflowId }) {
       </Field>
 
       {tt === "webhook" && webhookUrl && (
-        <Field label="URL do Webhook" hint="Envie um POST para esta URL com o payload no body">
+        <Field label="URL do Webhook" hint="Envie um POST assinado com HMAC SHA-256">
           <div style={{ display: "flex", gap: 4 }}>
             <input
               readOnly
@@ -77,10 +77,15 @@ function TriggerPanel({ config, onChange, workflowId }) {
           <div style={{ marginTop: 10, padding: "10px 12px", background: "var(--bg)", borderRadius: 6, border: "1px solid var(--border)" }}>
             <div style={{ fontSize: 10, color: "var(--muted)", fontFamily: "var(--mono)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Exemplo (curl)</div>
             <pre style={{ margin: 0, fontSize: 10, fontFamily: "var(--mono)", color: "var(--fg)", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
-{`curl -X POST \\
+{`BODY='{"message": "Olá!", "from": "5511999999999"}'
+TS=$(date +%s)
+SIG=$(printf "%s.%s" "$TS" "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SIGNING_SECRET" -hex | sed 's/^.* //')
+curl -X POST \\
   ${webhookUrl} \\
   -H "Content-Type: application/json" \\
-  -d '{"message": "Olá!", "from": "5511999999999"}'`}
+  -H "X-FlowForge-Timestamp: $TS" \\
+  -H "X-FlowForge-Signature: sha256=$SIG" \\
+  -d "$BODY"`}
             </pre>
           </div>
         </Field>
