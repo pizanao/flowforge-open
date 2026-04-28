@@ -1,0 +1,33 @@
+# Não copiar para a imagem Docker
+.git/
+.gitignore
+.venv/
+.idea/
+.vscode/
+.env
+tools/scripts/.demo.env
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Django
+staticfiles/
+celerybeat-schedule
+celerybeat.pid
+*.log
+
+# Testes
+tests/
+e2e/
+playwright-report/
+test-results/
+htmlcov/
+.coverage
+
+# Docs
+docs/
+README.md
+CLAUDE.md

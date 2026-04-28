@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose logs *)",
+      "Bash(docker compose ps)",
+      "Bash(docker compose ps *)",
+      "Bash(docker compose exec *)",
+      "Bash(docker inspect *)",
+      "Bash(curl -s http://localhost*)",
+      "Bash(curl -s http://127.0.0.1*)",
+      "Bash(curl -s -X POST http://localhost*)",
+      "Bash(curl -s -X POST http://127.0.0.1*)",
+      "Bash(curl -s -o /dev/null *)",
+      "Bash(npm run build)",
+      "Bash(npm run build *)",
+      "Bash(npm run dev)",
+      "Bash(npm run dev *)",
+      "Bash(bash -n *)",
+      "Bash(source ../.venv/bin/activate *)",
+      "Bash(source .venv/bin/activate *)",
+      "Bash(source /apps/flowforge/.venv/bin/activate *)",
+      "Bash(wc -l *)",
+      "Bash(sed -n *)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+[run]
+omit =
+    flowforge/management/*
+    flowforge/routing.py
+    flowforge/consumers.py
+    flowforge/api/exemplo.py
+    */migrations/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError

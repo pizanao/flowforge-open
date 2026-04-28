@@ -1,0 +1,109 @@
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+/backend/staticfiles/
+celerybeat-schedule
+celerybeat.pid
+*.log
+
+# Environment — SENSÍVEL (NUNCA COMMITAR)
+.env
+.env.local
+.env.production
+.demo.env
+tools/scripts/.demo.env
+.venv/
+.venv
+
+# Secrets (gerados localmente, nunca no repo)
+*.pem
+*.key
+*.crt
+credentials.json
+service-account-*.json
+
+# Coverage
+.coverage
+.coverage.*
+*.cover
+
+# Logs
+*.log
+logs/
+
+# E2E auth state (dados de sessão sensíveis)
+frontend/e2e/auth-state.json
+frontend/e2e/*.json
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/test-results/
+/frontend/playwright-report/
+
+# Allure
+/allure-results/
+/allure-reports/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scratch / debug artifacts
+teste.json
+*.scratch.json
+erroflow.PNG
+/backend/media/allure-reports/latest/data/behaviors.csv
+/backend/media/allure-reports/latest/data/behaviors.json
+/backend/media/allure-reports/latest/data/categories.csv
+/backend/media/allure-reports/latest/data/categories.json
+/backend/media/allure-reports/latest/data/packages.json
+/backend/media/allure-reports/latest/data/suites.csv
+/backend/media/allure-reports/latest/data/suites.json
+/backend/media/allure-reports/latest/data/timeline.json
+/backend/media/allure-reports/latest/export/influxDbData.txt
+/backend/media/allure-reports/latest/export/mail.html
+/backend/media/allure-reports/latest/export/prometheusData.txt
+/backend/media/allure-reports/latest/history/categories-trend.json
+/backend/media/allure-reports/latest/history/duration-trend.json
+/backend/media/allure-reports/latest/history/history.json
+/backend/media/allure-reports/latest/history/history-trend.json
+/backend/media/allure-reports/latest/history/retry-trend.json
+/backend/media/allure-reports/latest/plugin/behaviors/index.js
+/backend/media/allure-reports/latest/plugin/packages/index.js
+/backend/media/allure-reports/latest/plugin/screen-diff/index.js
+/backend/media/allure-reports/latest/plugin/screen-diff/styles.css
+/backend/media/allure-reports/latest/widgets/behaviors.json
+/backend/media/allure-reports/latest/widgets/categories.json
+/backend/media/allure-reports/latest/widgets/categories-trend.json
+/backend/media/allure-reports/latest/widgets/duration.json
+/backend/media/allure-reports/latest/widgets/duration-trend.json
+/backend/media/allure-reports/latest/widgets/environment.json
+/backend/media/allure-reports/latest/widgets/executors.json
+/backend/media/allure-reports/latest/widgets/history-trend.json
+/backend/media/allure-reports/latest/widgets/launch.json
+/backend/media/allure-reports/latest/widgets/retry-trend.json
+/backend/media/allure-reports/latest/widgets/severity.json
+/backend/media/allure-reports/latest/widgets/status-chart.json
+/backend/media/allure-reports/latest/widgets/suites.json
+/backend/media/allure-reports/latest/widgets/summary.json
+/backend/media/allure-reports/latest/app.js
+/backend/media/allure-reports/latest/favicon.ico
+/backend/media/allure-reports/latest/index.html
+/backend/media/allure-reports/latest/styles.css
+/backend/media/allure-reports/emailable-report-allure-docker-service.html
+/backend/media/allure-results/executor.json
