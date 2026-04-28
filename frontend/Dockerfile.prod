@@ -9,5 +9,6 @@ FROM node:20-alpine
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/scripts ./scripts
 EXPOSE 5106
-CMD ["serve", "-s", "dist", "-l", "5106"]
+CMD ["sh", "-c", "node scripts/validate-backend-connectivity.mjs && serve -s dist -l 5106"]

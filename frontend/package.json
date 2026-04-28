@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "check:backend": "node scripts/validate-backend-connectivity.mjs",
+    "dev": "npm run check:backend && vite --host",
     "build": "vite build",
+    "test:startup": "node --test tests/backend-connectivity.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",

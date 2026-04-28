@@ -46,6 +46,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      BACKEND_URL: http://backend:8006
+      BACKEND_URL_WS: ws://backend:8006
     volumes:
       - ./frontend:/app
       - /app/node_modules
