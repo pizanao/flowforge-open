@@ -7,7 +7,6 @@ Room group: workflow_run_{run_id}
 
 import json
 import logging
-from urllib.parse import parse_qs
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -31,7 +30,8 @@ class WorkflowRunConsumer(AsyncWebsocketConsumer):
         self.group_name = f"workflow_run_{self.run_id}"
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
-        await self.accept()
+        subprotocol = "flowforge.jwt" if "flowforge.jwt" in self.scope.get("subprotocols", []) else None
+        await self.accept(subprotocol=subprotocol)
 
         # Envia snapshot do estado atual para clientes que conectam tarde
         snapshot = await self._build_snapshot()
@@ -42,8 +42,9 @@ class WorkflowRunConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code: int) -> None:
         """Remove o canal do grupo ao desconectar."""
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
-        logger.debug("WebSocket desconectado: run_id=%s code=%s", self.run_id, close_code)
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        logger.debug("WebSocket desconectado: run_id=%s code=%s", getattr(self, "run_id", ""), close_code)
 
     async def receive(self, text_data: str = "", bytes_data: bytes = b"") -> None:
         """Recebe mensagens do cliente (ping/keepalive — sem lógica de negócio)."""
@@ -80,13 +81,15 @@ class WorkflowRunConsumer(AsyncWebsocketConsumer):
 
     def _extract_token(self) -> str:
         """
-        Extrai o token JWT da query string.
+        Extrai o token JWT dos subprotocolos WebSocket.
 
         Returns:
-            Token JWT informado em ?token=... ou string vazia.
+            Token JWT informado como subprotocolo jwt.<token> ou string vazia.
         """
-        raw_query = self.scope.get("query_string", b"").decode()
-        return parse_qs(raw_query).get("token", [""])[0]
+        for subprotocol in self.scope.get("subprotocols", []):
+            if subprotocol.startswith("jwt."):
+                return subprotocol.removeprefix("jwt.")
+        return ""
 
     @database_sync_to_async
     def _authenticate(self, token: str):
@@ -94,7 +97,7 @@ class WorkflowRunConsumer(AsyncWebsocketConsumer):
         Valida o JWT e retorna o usuário autenticado.
 
         Args:
-            token: JWT enviado na query string.
+            token: JWT enviado por subprotocolo WebSocket.
 
         Returns:
             Usuário autenticado ou None quando o token for inválido.

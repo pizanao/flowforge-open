@@ -94,7 +94,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      <div style={{ minHeight: "100vh", maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+      <div style={{ minHeight: "100vh", margin: "0 auto", padding: "0 24px" }}>
         {header}
 
         {!isAuthenticated && <LoginPage oauthLoading={oauthLoading} oauthError={oauthError} />}

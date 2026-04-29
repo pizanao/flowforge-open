@@ -84,9 +84,14 @@ Responda de forma natural, direta e no mesmo idioma da mensagem.
 ./flowforge.sh demo
 
 # 3. Dispara o webhook manualmente
+BODY='{"message": "Olá Luna!", "from": "5511999999999", "chat_id": "5511999999999@c.us"}'
+TS=$(date +%s)
+SIG=$(printf "%s.%s" "$TS" "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SIGNING_SECRET" -hex | sed 's/^.* //')
 curl -X POST http://localhost:8006/api/workflows/{id}/webhook/ \
   -H "Content-Type: application/json" \
-  -d '{"message": "Olá Luna!", "from": "5511999999999", "chat_id": "5511999999999@c.us"}'
+  -H "X-FlowForge-Timestamp: $TS" \
+  -H "X-FlowForge-Signature: sha256=$SIG" \
+  -d "$BODY"
 
 # 4. Acompanha a execução em tempo real no canvas
 # → Abra http://localhost:5106/ e clique no workflow criado

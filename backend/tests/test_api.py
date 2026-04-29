@@ -1,8 +1,26 @@
 """Testes dos endpoints da API REST do FlowForge."""
 
+import hashlib
+import hmac
+import time
+
 import pytest
 
-from flowforge.models import Node, Workflow
+from flowforge.models import Node, Run, Workflow
+
+
+def webhook_signature(secret, body, timestamp=None):
+    """Cria headers de assinatura para webhooks externos."""
+    timestamp = str(timestamp or int(time.time()))
+    digest = hmac.new(
+        secret.encode(),
+        timestamp.encode() + b"." + body,
+        hashlib.sha256,
+    ).hexdigest()
+    return {
+        "HTTP_X_FLOWFORGE_TIMESTAMP": timestamp,
+        "HTTP_X_FLOWFORGE_SIGNATURE": f"sha256={digest}",
+    }
 
 
 @pytest.mark.django_db
@@ -75,6 +93,60 @@ class TestTemplatesEndpoint:
     def test_templates_list(self, api):
         resp = api.get("/api/workflows/templates/")
         assert resp.status_code == 200
+
+
+@pytest.mark.django_db
+class TestWebhookEndpoint:
+    def test_missing_signature_rejects_webhook(self, anon_api, workflow, settings):
+        settings.WEBHOOK_SIGNING_SECRET = "webhook-test-secret"
+        resp = anon_api.post(
+            f"/api/workflows/{workflow.id}/webhook/",
+            {"message": "olá"},
+            format="json",
+        )
+
+        assert resp.status_code == 401
+        assert Run.objects.count() == 0
+
+    def test_invalid_signature_rejects_webhook(self, anon_api, workflow, settings):
+        settings.WEBHOOK_SIGNING_SECRET = "webhook-test-secret"
+        body = b'{"message":"ola"}'
+        resp = anon_api.generic(
+            "POST",
+            f"/api/workflows/{workflow.id}/webhook/",
+            body,
+            content_type="application/json",
+            HTTP_X_FLOWFORGE_TIMESTAMP=str(int(time.time())),
+            HTTP_X_FLOWFORGE_SIGNATURE="sha256=invalida",
+        )
+
+        assert resp.status_code == 401
+        assert Run.objects.count() == 0
+
+    def test_valid_signature_starts_run(self, anon_api, workflow, settings, monkeypatch):
+        settings.WEBHOOK_SIGNING_SECRET = "webhook-test-secret"
+        body = b'{"message":"ola"}'
+        delayed_runs = []
+        monkeypatch.setattr(
+            "flowforge.tasks.execute_workflow.delay",
+            lambda run_id: delayed_runs.append(run_id),
+        )
+        headers = webhook_signature(settings.WEBHOOK_SIGNING_SECRET, body)
+
+        resp = anon_api.generic(
+            "POST",
+            f"/api/workflows/{workflow.id}/webhook/",
+            body,
+            content_type="application/json",
+            **headers,
+        )
+
+        assert resp.status_code == 202
+        run = Run.objects.get()
+        assert run.workflow == workflow
+        assert run.trigger_type == "webhook"
+        assert run.input_data == {"message": "ola"}
+        assert delayed_runs == [str(run.id)]
 
 
 @pytest.mark.django_db

@@ -109,8 +109,8 @@ export function useWorkflowRun(workflowId, onRunFinished = null) {
     closeWs();
     const token = localStorage.getItem("flowforge_token");
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const query = token ? `?token=${encodeURIComponent(token)}` : "";
-    const ws = new WebSocket(`${protocol}://${window.location.host}/ws/runs/${id}/${query}`);
+    const subprotocols = token ? ["flowforge.jwt", `jwt.${token}`] : ["flowforge.jwt"];
+    const ws = new WebSocket(`${protocol}://${window.location.host}/ws/runs/${id}/`, subprotocols);
     wsRef.current = ws;
 
     ws.onmessage = (e) => {

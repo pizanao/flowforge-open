@@ -45,6 +45,23 @@ wait_for() {
   echo -e " ${GREEN}pronto${NC}"
 }
 
+run_migrations() {
+  local timeout="${1:-60}"
+  local i=0
+  printf "${MUTED}  aplicando migrations"
+  until docker compose exec -T backend python manage.py migrate --no-input >/dev/null; do
+    sleep 2
+    printf "."
+    i=$((i + 2))
+    if [[ $i -ge $timeout ]]; then
+      echo -e "${NC}"
+      err "migrations não concluíram em ${timeout}s"
+      return 1
+    fi
+  done
+  echo -e " ${GREEN}pronto${NC}"
+}
+
 load_hq_token() {
   # Já definido via env? Usa direto.
   if [[ -n "${HQ_API_TOKEN:-}" ]]; then
@@ -96,7 +113,16 @@ cmd_start() {
   section "Iniciando FlowForge"
   cd "$SCRIPT_DIR"
 
-  log "Subindo containers Docker..."
+  log "Subindo Redis e backend..."
+  docker compose up -d redis backend
+
+  log "Aplicando migrations do backend..."
+  run_migrations
+
+  log "Reconstruindo e subindo frontend..."
+  docker compose up -d --build frontend
+
+  log "Subindo workers e serviços auxiliares..."
   docker compose up -d
 
   log "Aguardando serviços ficarem prontos..."

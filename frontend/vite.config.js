@@ -8,8 +8,15 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5106,
     proxy: {
-      "/api": { target: "http://localhost:8006", changeOrigin: true },
-      "/ws": { target: "ws://localhost:8006", ws: true, changeOrigin: true },
+      "/api": {
+        target: process.env.BACKEND_URL || "http://localhost:8006",
+        changeOrigin: true,
+      },
+      "/ws": {
+        target: process.env.BACKEND_URL_WS || "ws://localhost:8006",
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
 });
