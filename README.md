@@ -1,7 +1,7 @@
 <div align="center">
-                       
-# :cyclone: FlowForge
 
+# :factory: FlowForge
+    
 **Visual workflow builder · Real-time execution via WebSocket · LLM-powered agents**
 
 [![Django](https://img.shields.io/badge/Django-5.x-0C4B33?style=flat-square&logo=django)](https://djangoproject.com)
@@ -15,13 +15,6 @@
 
 ---
 
-## Demo
-
-![FlowForge demo — Luna workflow from scratch](docs/assets/demo.gif)
-
-> *Creating a Webhook → LLM (Luna/Ollama) → HTTP → Output pipeline from scratch, configuring each node, and executing with real-time WebSocket feedback — recorded at 2× speed.*
-
----
 
 ## What is FlowForge?
 
@@ -238,14 +231,9 @@ docker compose exec backend python manage.py seed_daily_briefing   # Daily Brief
 ### Trigger a workflow externally (no browser needed)
 
 ```bash
-BODY='{"message": "Hello!", "from": "5511999999999"}'
-TS=$(date +%s)
-SIG=$(printf "%s.%s" "$TS" "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SIGNING_SECRET" -hex | sed 's/^.* //')
 curl -X POST http://localhost:8006/api/workflows/{id}/webhook/ \
   -H "Content-Type: application/json" \
-  -H "X-FlowForge-Timestamp: $TS" \
-  -H "X-FlowForge-Signature: sha256=$SIG" \
-  -d "$BODY"
+  -d '{"message": "Hello!", "from": "5511999999999"}'
 # → {"run_id": "...", "status": "execução iniciada"}
 ```
 
@@ -263,7 +251,7 @@ POST   /api/workflows/from-template/{slug}/    Instantiate template as workflow
 PUT    /api/workflows/{id}/save_graph/          Atomic save (nodes + edges)
 POST   /api/workflows/{id}/execute/             Execute via Celery
 POST   /api/workflows/{id}/validate/            {valid, errors: [{node_id, message}]}
-POST   /api/workflows/{id}/webhook/             External HTTP trigger with HMAC signature
+POST   /api/workflows/{id}/webhook/             External HTTP trigger
 POST   /api/workflows/{id}/duplicate/           Clone with all nodes + edges
 
 # Nodes
@@ -276,7 +264,7 @@ GET    /api/runs/{id}/                          Full detail with per-node execut
 POST   /api/runs/{id}/cancel/                   Cancel in-flight run
 
 # WebSocket
-WS     /ws/runs/{run_id}/                       Live execution stream (JWT via subprotocol)
+WS     /ws/workflow/{id}/run/{run_id}/          Live execution stream (replays snapshot on connect)
 ```
 
 ---
