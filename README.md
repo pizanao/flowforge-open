@@ -18,11 +18,11 @@
 
 ## What is FlowForge?
 
-FlowForge is a full-stack automation platform where you build workflows visually — drag nodes onto a canvas, wire them together, and watch them execute in real time with WebSocket-driven animations.
+FlowForge is a full-stack automation platform where you build workflows visually drag nodes onto a canvas, wire them together, and watch them execute in real time with WebSocket-driven animations.
 
 Every node type has a dedicated configuration panel. Every run is logged with per-node input/output and duration. Every execution step pushes state to the canvas live.
 
-Think **n8n meets a custom Python backend** — built from scratch to demonstrate full-stack engineering depth.
+Think **n8n meets a custom Python backend** built from scratch to demonstrate full-stack engineering depth.
 
 ---
 
